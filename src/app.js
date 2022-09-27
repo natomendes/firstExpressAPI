@@ -14,6 +14,24 @@ app.get('/', (req, res) => res
       },
     ));
 
+app.get('/teams/:id', (req, res) => {
+  const { id: reqId } = req.params;
+  const team = teams.find(({ id }) => id === Number(reqId));
+  if (!team) {
+    return res
+      .status(404)
+      .json({ 
+          message: 'Team not found!',
+        });
+  }
+
+  res
+    .status(200)
+    .json({
+      ...team,
+    });
+});
+
 app.get('/teams', (req, res) => res
   .status(200)
   .json(

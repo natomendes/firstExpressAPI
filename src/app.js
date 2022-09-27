@@ -1,6 +1,6 @@
 const express = require('express');
 
-const teams = require('./data/teams');
+let teams = require('./data/teams');
 
 const app = express();
 
@@ -75,5 +75,24 @@ app.put('/teams/:id', (req, res) => {
         updatedTeam,
       },
     );
+});
+
+app.delete('/teams/:id', (req, res) => {
+  const { id: reqId } = req.params;
+  const deletedTeam = teams.find(({ id }) => id === Number(reqId));
+  if (!deletedTeam) {
+    return res
+      .status(404)
+      .json({ 
+          message: 'Team not found!',
+        });
+  }
+
+  teams = teams.filter(({ id }) => id !== Number(reqId));
+  res
+    .status(200)
+    .json({
+      deletedTeam,
+    });
 });
 module.exports = app;

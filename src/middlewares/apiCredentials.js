@@ -1,6 +1,6 @@
 const fs = require('fs/promises');
 
-module.exports = async function apiCredentials(req, res, next) {
+const apiCredentials = async (req, res, next) => {
   const token = req.header('X-API-TOKEN');
 
   const authdata = await fs.readFile(
@@ -12,6 +12,7 @@ module.exports = async function apiCredentials(req, res, next) {
   const authorized = JSON.parse(authdata);
 
   if (token in authorized) {
+    req.teams = authorized[token];
     return next();
   }
 
@@ -21,3 +22,5 @@ module.exports = async function apiCredentials(req, res, next) {
       message: 'Unauthorized request!!',
     });
 };
+
+module.exports = apiCredentials;

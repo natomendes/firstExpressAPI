@@ -1,29 +1,18 @@
 const express = require('express');
+const existingId = require('./middlewares/existingId');
 
 let teams = require('./data/teams');
+const validateTeam = require('./middlewares/validateTeam');
+
+let nextId = 3;
 
 const app = express();
 
 app.use(express.json());
 
-app.get('/', (req, res) => res
-    .status(200)
-    .json(
-      {
-        message: 'Olá Mundo!',
-      },
-    ));
-
-app.get('/teams/:id', (req, res) => {
+app.get('/teams/:id', existingId, (req, res) => {
   const { id: reqId } = req.params;
   const team = teams.find(({ id }) => id === Number(reqId));
-  if (!team) {
-    return res
-      .status(404)
-      .json({ 
-          message: 'Team not found!',
-        });
-  }
 
   res
     .status(200)
@@ -40,20 +29,20 @@ app.get('/teams', (req, res) => res
     },
   ));    
 
-app.post('/teams', (req, res) => {
-  const newTeam = { ...req.body };
-  teams.push(newTeam);
-
+app.post('/teams', validateTeam, (req, res) => {
+  const team = { id: nextId, ...req.body };
+  teams.push(team);
+  nextId += 1;
   res
     .status(201)
     .json(
       {
-        team: newTeam,
+        team,
       },
     );
 });
 
-app.put('/teams/:id', (req, res) => {
+app.put('/teams/:id', validateTeam, (req, res) => {
   const { id } = req.params;
   const { name, initials } = req.body;
 
@@ -77,16 +66,9 @@ app.put('/teams/:id', (req, res) => {
     );
 });
 
-app.delete('/teams/:id', (req, res) => {
+app.delete('/teams/:id', existingId, (req, res) => {
   const { id: reqId } = req.params;
   const deletedTeam = teams.find(({ id }) => id === Number(reqId));
-  if (!deletedTeam) {
-    return res
-      .status(404)
-      .json({ 
-          message: 'Team not found!',
-        });
-  }
 
   teams = teams.filter(({ id }) => id !== Number(reqId));
   res
